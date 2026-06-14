@@ -1,4 +1,4 @@
-name: Pipeline DevSecOps - CI
+name: Pipeline DevSecOps - CI/CD
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
         run: pytest test_app.py
 
   sast:
-    name: Analise de Seguranca (SAST)
+    name: Analise Estatica (SAST)
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -46,7 +46,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-      - name: Instalar Ferramentas de Seguranca
+      - name: Instalar Ferramentas
         run: |
           pip install -r requirements.txt
           pip install bandit pip-audit
@@ -54,3 +54,18 @@ jobs:
         run: bandit -r todo_project/ || true
       - name: Varrer Dependencias (Pip-Audit)
         run: pip-audit -r requirements.txt || true
+
+  deploy_stage:
+    name: Deploy e DAST (Stage)
+    needs: [sast, testes]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build da Aplicacao (Stage)
+        run: docker build -t gestao-tarefas:stage .
+      - name: Deploy no Ambiente de Stage
+        run: docker run -d -p 5000:5000 --name app-stage gestao-tarefas:stage
+      - name: Aguardar inicializacao do servidor
+        run: sleep 5
+      - name: Teste Dinamico Automatizado (DAST ZAP)
+        run: docker run --network="host" --rm -t zaproxy/zap-stable zap-baseline.py -t http://localhost:5000 || true
