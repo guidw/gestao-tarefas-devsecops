@@ -32,5 +32,5 @@ Since the application is fully containerized, you don't need to pollute your loc
 
 1. **Clone the repository:**
 ```bash
-   git clone [https://github.com/guidw/gestao-tarefas-devsecops.git](https://github.com/guidw/gestao-tarefas-devsecops.git)
+   git clone https://github.com/guidw/gestao-tarefas-devsecops.git
    cd gestao-tarefas-devsecops
