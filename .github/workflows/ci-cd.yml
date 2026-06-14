@@ -65,7 +65,13 @@ jobs:
         run: docker build -t gestao-tarefas:stage .
       - name: Deploy no Ambiente de Stage
         run: docker run -d -p 5000:5000 --name app-stage gestao-tarefas:stage
-      - name: Aguardar inicializacao do servidor
-        run: sleep 5
+      
+      - name: Instalar e Inicializar Ferramentas de Monitoramento (Prometheus e Grafana)
+        run: |
+          docker run -d -p 9090:9090 --name prometheus-stage prom/prometheus:latest
+          docker run -d -p 3000:3000 --name grafana-stage grafana/grafana:latest
+          
+      - name: Aguardar inicializacao dos servicos
+        run: sleep 10
       - name: Teste Dinamico Automatizado (DAST ZAP)
         run: docker run --network="host" --rm -t zaproxy/zap-stable zap-baseline.py -t http://localhost:5000 || true
